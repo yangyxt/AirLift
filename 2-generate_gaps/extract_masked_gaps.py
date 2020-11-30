@@ -41,11 +41,13 @@ if not os.path.isfile(sys.argv[1]):
 fn_chain = sys.argv[1] 
 anticipated_read_size = int(sys.argv[3])
 
+'''
 if os.path.isfile(sys.argv[4]): 
     prompt = "overwrite " + sys.argv[4] + "? [Enter] for yes [any other key] for no" 
     text = raw_input(prompt) 
     if text != "":
-        exit() 
+        exit()
+'''
 
 chain = dict() 
 chain_metadata = dict() 

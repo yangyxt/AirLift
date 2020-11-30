@@ -20,11 +20,13 @@ if not os.path.isfile(in_fn):
     print("not a file: " + in_fn )
     exit() 
 
+'''
 if os.path.isfile(out_fn): 
     prompt = "overwrite " + sys.argv[3] + "? [Enter] for yes [any other key] for no" 
     text = input(prompt) 
     if text != "":
-        exit() 
+        exit()
+'''
 
 outfile = open(out_fn, "w") 
 
