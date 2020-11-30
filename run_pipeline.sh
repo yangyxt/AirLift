@@ -64,7 +64,8 @@ function align_gaps(){
 function extract_reads(){
     mkdir "${OUTPUT}/bedfiles"
     for i in `echo ${OUTPUT}/*.chain`; do
-        local chain_basename=`basename $i | sed s/.chain//`; mkdir -p "${OUTPUT}/bedfiles/${chain_basename}/"; \
+        local chain_basename=`basename $i | sed s/.chain//`; \
+        mkdir -p "${OUTPUT}/bedfiles/${chain_basename}/"; \
         /usr/bin/time -v -p -o "${OUTPUT}/bedfiles/${chain_basename}/extract_regions.time" \
         bash "${SRCFOLDER}/4-extract_reads/extract_regions.sh" \
         "${OUTPUT}/${chain_basename}_aligned_gaps.bam" \
@@ -75,7 +76,7 @@ function extract_reads(){
         local chain_basename=`basename $i | sed s/.chain//`
         local num_of_files=`ls -l ${OUTPUT}/bedfiles/${chain_basename}/*.bed | wc -l`
         local sed_bed_files=$(echo ${OUTPUT}\/bedfiles\/${chain_basename}/ | sed 's/\//\\\//g')
-        local sed_read_scripts=$(echo ${SRCFOLDER}\/4-extract_reads\/extract_reads.bash | sed 's/\//\\\//g')
+        local sed_read_scripts=$(echo ${SRCFOLDER}\/4-extract_reads\/extract_reads.sh | sed 's/\//\\\//g')
         local sed_read_bam=$(echo $READ_BAM | sed 's/\//\\\//g')
         cat "${SRCFOLDER}/4-extract_reads/slurm_extract_reads.sh" | \
         sed "s/{NUM_FILES}/$num_of_files/g" | \
@@ -182,7 +183,7 @@ function extract_reads_with_parallel(){
         local chain_basename=`basename $i | sed s/.chain//`
         local num_of_files=`ls -l ${OUTPUT}/bedfiles/${chain_basename}/*.bed | wc -l`
         local sed_bed_files=$(echo ${OUTPUT}\/bedfiles\/${chain_basename}/ | sed 's/\//\\\//g')
-        local sed_read_scripts=$(echo ${SRCFOLDER}\/4-extract_reads\/extract_reads.bash | sed 's/\//\\\//g')
+        local sed_read_scripts=$(echo ${SRCFOLDER}\/4-extract_reads\/extract_reads.sh | sed 's/\//\\\//g')
         local sed_read_bam=$(echo $READ_BAM | sed 's/\//\\\//g')
         cat "${SRCFOLDER}/4-extract_reads/parallel_extract_reads.sh" | \
         sed "s/{NUM_FILES}/$num_of_files/g" | \
