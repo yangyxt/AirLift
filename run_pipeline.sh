@@ -1,5 +1,5 @@
 #!/bin/bash
-SCRIPTPATH="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
+SCRIPTPATH=$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )
 parent_folder_path=$(echo ${SCRIPTPATH} | awk -F '/' '{for(i=2;i<NF;i++) printf "/"$i;}')
 . ${parent_folder_path}/common_bash_utils.sh
 
@@ -30,7 +30,7 @@ function generate_chain(){
 
 function generate_gaps(){
     for i in `echo ${OUTPUT}/*.chain`; do 
-        local chain_basename=`basename $i | sed s/.chain//`; \
+        local chain_basename=`basename $i | sed s/.chain//`
         /usr/bin/time -v -p -o "${OUTPUT}/${chain_basename}_extracted_gaps.fa.time" \
         python3 "${SRCFOLDER}/2-generate_gaps/extract_gaps.py" \
         $i \
@@ -40,7 +40,7 @@ function generate_gaps(){
     done
 
     for i in `echo ${OUTPUT}/*.chain`; do
-        local chain_basename=`basename $i | sed s/.chain//`; \
+        local chain_basename=`basename $i | sed s/.chain//`
         /usr/bin/time -v -p -o "${OUTPUT}/${chain_basename}_kmer_gaps.fasta.time" \
         python3 "${SRCFOLDER}/2-generate_gaps/gaps_to_fasta.py" \
         "${OUTPUT}/${chain_basename}_extracted_gaps.fa" \
@@ -52,7 +52,7 @@ function generate_gaps(){
 
 function align_gaps(){
     for i in `echo ${OUTPUT}/*.chain`; do
-        local chain_basename=`basename $i | sed s/.chain//`; \
+        local chain_basename=`basename $i | sed s/.chain//`
         bash "${SRCFOLDER}/3-align_gaps/align_gaps.sh" \
         "${OLDREF}" \
         "${OUTPUT}/${chain_basename}_kmer_gaps.fasta" \
@@ -64,7 +64,7 @@ function align_gaps(){
 function extract_reads(){
     mkdir "${OUTPUT}/bedfiles"
     for i in `echo ${OUTPUT}/*.chain`; do
-        local chain_basename=`basename $i | sed s/.chain//`; \
+        local chain_basename=`basename $i | sed s/.chain//`
         mkdir -p "${OUTPUT}/bedfiles/${chain_basename}/"; \
         /usr/bin/time -v -p -o "${OUTPUT}/bedfiles/${chain_basename}/extract_regions.time" \
         bash "${SRCFOLDER}/4-extract_reads/extract_regions.sh" \
@@ -170,19 +170,20 @@ function extract_reads(){
 }
 
 function extract_reads_with_parallel(){
-    mkdir "${OUTPUT}/bedfiles"
+    mkdir "${OUTPUT}/bedfiles" 2> /dev/null
     for i in `echo ${OUTPUT}/*.chain`; do
-        local chain_basename=`basename $i | sed s/.chain//`; mkdir -p "${OUTPUT}/bedfiles/${chain_basename}/"; \
+        local chain_basename=`basename $i | sed s/.chain//`
+        mkdir -p "${OUTPUT}/bedfiles/${chain_basename}"
         /usr/bin/time -v -p -o "${OUTPUT}/bedfiles/${chain_basename}/extract_regions.time" \
         bash "${SRCFOLDER}/4-extract_reads/extract_regions.sh" \
         "${OUTPUT}/${chain_basename}_aligned_gaps.bam" \
-        "${OUTPUT}/bedfiles/${chain_basename}/"
+        "${OUTPUT}/bedfiles/${chain_basename}"
     done
 
     for i in `echo ${OUTPUT}/*.chain`; do
         local chain_basename=`basename $i | sed s/.chain//`
         local num_of_files=`ls -l ${OUTPUT}/bedfiles/${chain_basename}/*.bed | wc -l`
-        local sed_bed_files=$(echo ${OUTPUT}\/bedfiles\/${chain_basename}/ | sed 's/\//\\\//g')
+        local sed_bed_files=$(echo ${OUTPUT}\/bedfiles\/${chain_basename} | sed 's/\//\\\//g')
         local sed_read_scripts=$(echo ${SRCFOLDER}\/4-extract_reads\/extract_reads.sh | sed 's/\//\\\//g')
         local sed_read_bam=$(echo $READ_BAM | sed 's/\//\\\//g')
         cat "${SRCFOLDER}/4-extract_reads/parallel_extract_reads.sh" | \
@@ -207,8 +208,8 @@ function extract_reads_with_parallel(){
 
     for i in `echo ${OUTPUT}/*.chain`; do
         local chain_basename=`basename $i | sed s/.chain//`
-        mkdir -p "${OUTPUT}/bedfiles/${chain_basename}/retired_bed/"
-        mkdir -p "${OUTPUT}/bedfiles/${chain_basename}/constant_bed/"
+        mkdir -p "${OUTPUT}/bedfiles/${chain_basename}/retired_bed"
+        mkdir -p "${OUTPUT}/bedfiles/${chain_basename}/constant_bed"
     done
 
     for i in `echo ${OUTPUT}/*.chain`; do
@@ -231,14 +232,14 @@ function extract_reads_with_parallel(){
 
     for i in `echo ${OUTPUT}/*.chain`; do
         local chain_basename=`basename $i | sed s/.chain//`
-        mkdir -p "${OUTPUT}/bedfiles/${chain_basename}/reads/"
+        mkdir -p "${OUTPUT}/bedfiles/${chain_basename}/reads"
         cat "${OUTPUT}/bedfiles/${chain_basename}/"*.reads "${OUTPUT}/bedfiles/${chain_basename}/retired_bed/retired_reads.bed" > "${OUTPUT}/bedfiles/${chain_basename}/updated_and_retired_reads.bed"
         /usr/bin/time -v -p -o "${OUTPUT}/bedfiles/${chain_basename}/extract_sequences_full.time" \
         bash "${SRCFOLDER}/4-extract_reads/extract_sequence.sh" \
         ${FIRST_PAIR} \
         ${SECOND_PAIR} \
         "${OUTPUT}/bedfiles/${chain_basename}/updated_and_retired_reads.bed" \
-        "${OUTPUT}/bedfiles/${chain_basename}/reads/"
+        "${OUTPUT}/bedfiles/${chain_basename}/reads"
     done
 
     for i in `echo ${OUTPUT}/*.chain`; do
