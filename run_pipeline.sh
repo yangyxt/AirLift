@@ -33,7 +33,7 @@ function generate_gaps(){
         local chain_basename=`basename $i | sed s/.chain//`
         /usr/bin/time -v -p -o "${OUTPUT}/${chain_basename}_extracted_gaps.fa.time" \
         python3 "${SRCFOLDER}/2-generate_gaps/extract_gaps.py" \
-        $i \
+        "$i" \
         "${NEWREF}" \
         ${READSIZE} \
         "${OUTPUT}/${chain_basename}_extracted_gaps.fa"
