@@ -13,7 +13,7 @@ module load bwa
 
 for i in `echo $FASTQ`; do
     fname=`basename $i`
-    /usr/bin/time -v -p -o ${BAM_SUFFIX}_${fname}.time bwa mem -M -t $THREADS $REF ${i}_1.fastq ${i}_2.fastq | samtools view -h -F4 | samtools sort -m ${MAXMEM} -l0 > ${BAM_SUFFIX}_${fname}.bam
+    /usr/bin/time -v -p -o "${BAM_SUFFIX}_${fname}.time" bwa mem -M -t $THREADS $REF ${i}_1.fastq ${i}_2.fastq | samtools view -h -F4 | samtools sort -m ${MAXMEM} -l0 > ${BAM_SUFFIX}_${fname}.bam
 done
 
 module unload bwa

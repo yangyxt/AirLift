@@ -225,7 +225,7 @@ function extract_reads_with_parallel(){
 
     for i in `ls ${OUTPUT}/*.chain`; do
         local chain_basename=`basename $i | sed s/.chain//`
-        /usr/bin/time -v -p -o ${OUTPUT}/bedfiles/${chain_basename}/retired_bed/retired_reads.bed.time \
+        /usr/bin/time -v -p -o "${OUTPUT}/bedfiles/${chain_basename}/retired_bed/retired_reads.bed.time" \
         bash ${SRCFOLDER}/4-extract_reads/extract_reads_noprune.sh \
         ${READ_BAM} \
         ${OUTPUT}/bedfiles/${chain_basename}/retired_bed/retired_regions.bed > ${OUTPUT}/bedfiles/${chain_basename}/retired_bed/retired_reads.bed
@@ -246,7 +246,7 @@ function extract_reads_with_parallel(){
 
     for i in `ls ${OUTPUT}/*.chain`; do
         local chain_basename=`basename $i | sed s/.chain//`
-        /usr/bin/time -v -p -o ${OUTPUT}/bedfiles/${chain_basename}/reads/paired_reads.time \
+        /usr/bin/time -v -p -o "${OUTPUT}/bedfiles/${chain_basename}/reads/paired_reads.time" \
         bwa mem -M -t $THREAD "${NEWREF}" "${OUTPUT}/bedfiles/${chain_basename}/reads/reads_1.fastq" "${OUTPUT}/bedfiles/${chain_basename}/reads/reads_2.fastq" | \
         samtools view -h -F4 | \
         samtools sort -m 16g -l0 > ${OUTPUT}/bedfiles/${chain_basename}/reads/paired_reads.bam
@@ -254,7 +254,7 @@ function extract_reads_with_parallel(){
 
     for i in `ls ${OUTPUT}/*.chain`; do
         local chain_basename=`basename $i | sed s/.chain//`
-        /usr/bin/time -v -p -o ${OUTPUT}/bedfiles/${chain_basename}/reads/singletons_reads.time \
+        /usr/bin/time -v -p -o "${OUTPUT}/bedfiles/${chain_basename}/reads/singletons_reads.time" \
         bwa mem -M -t $THREAD "${NEWREF}" "${OUTPUT}/bedfiles/${chain_basename}/reads/singletons.fastq" | \
         samtools view -h -F4 | \
         samtools sort -m 16g -l0 > ${OUTPUT}/bedfiles/${chain_basename}/reads/singletons_reads.bam
