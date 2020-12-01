@@ -173,7 +173,7 @@ function extract_reads_with_parallel(){
     mkdir "${OUTPUT}/bedfiles" 2> /dev/null
     for i in `ls ${OUTPUT}/*.chain`; do
         local chain_basename=`basename $i | sed s/.chain//`
-        mkdir -p "${OUTPUT}/bedfiles/${chain_basename}"
+        mkdir -p "${OUTPUT}/bedfiles/${chain_basename}" 2> /dev/null
         /usr/bin/time -v -p -o "${OUTPUT}/bedfiles/${chain_basename}/extract_regions.time" \
         bash ${SRCFOLDER}/4-extract_reads/extract_regions.sh \
         ${OUTPUT}/${chain_basename}_aligned_gaps.bam \
