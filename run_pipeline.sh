@@ -175,9 +175,9 @@ function extract_reads_with_parallel(){
         local chain_basename=`basename $i | sed s/.chain//`
         mkdir -p "${OUTPUT}/bedfiles/${chain_basename}"
         /usr/bin/time -v -p -o "${OUTPUT}/bedfiles/${chain_basename}/extract_regions.time" \
-        bash "${SRCFOLDER}/4-extract_reads/extract_regions.sh" \
-        "${OUTPUT}/${chain_basename}_aligned_gaps.bam" \
-        "${OUTPUT}/bedfiles/${chain_basename}"
+        bash ${SRCFOLDER}/4-extract_reads/extract_regions.sh \
+        ${OUTPUT}/${chain_basename}_aligned_gaps.bam \
+        ${OUTPUT}/bedfiles/${chain_basename}
     done
 
     for i in `ls ${OUTPUT}/*.chain`; do
@@ -192,75 +192,77 @@ function extract_reads_with_parallel(){
         sed "s/{BED_FILES_FOLDER}/$sed_bed_files/g" | \
         sed "s/{EXTRACT_READS_SCRIPT}/$sed_read_scripts/g" | \
         sed "s/{READ_BAM_FILE}/$sed_read_bam/g" | \
-        sed "s/{READSIZE}/$READSIZE/g" > "${OUTPUT}/${chain_basename}_samplejob.sh"
+        sed "s/{READSIZE}/$READSIZE/g" > ${OUTPUT}/${chain_basename}_samplejob.sh
     done
 
     for i in `ls ${OUTPUT}/*.chain`; do
         local chain_basename=`basename $i | sed s/.chain//`
-        bash "${OUTPUT}/${chain_basename}_samplejob.sh"
+        bash ${OUTPUT}/${chain_basename}_samplejob.sh
     done
 
     for i in `ls ${OUTPUT}/*.chain`; do
         local chain_basename=`basename $i | sed s/.chain//`
-        /usr/bin/time -v -p -o "${OUTPUT}/bedfiles/${chain_basename}/merged_${chain_basename}.bed.time" \
-        cat "${OUTPUT}/bedfiles/${chain_basename}/"*.bed | sortBed -i - | mergeBed -i - > "${OUTPUT}/bedfiles/${chain_basename}/merged_${chain_basename}.bed"
+        /usr/bin/time -v -p -o ${OUTPUT}/bedfiles/${chain_basename}/merged_${chain_basename}.bed.time
+        local -a beds=($(ls ${OUTPUT}/bedfiles/${chain_basename}/*.bed | awk '{printf $1" ";}'))
+        cat ${beds[@]} | sortBed -i - | mergeBed -i - > ${OUTPUT}/bedfiles/${chain_basename}/merged_${chain_basename}.bed
     done
 
     for i in `ls ${OUTPUT}/*.chain`; do
         local chain_basename=`basename $i | sed s/.chain//`
-        mkdir -p "${OUTPUT}/bedfiles/${chain_basename}/retired_bed"
-        mkdir -p "${OUTPUT}/bedfiles/${chain_basename}/constant_bed"
+        mkdir -p ${OUTPUT}/bedfiles/${chain_basename}/retired_bed
+        mkdir -p ${OUTPUT}/bedfiles/${chain_basename}/constant_bed
     done
 
     for i in `ls ${OUTPUT}/*.chain`; do
         local chain_basename=`basename $i | sed s/.chain//`
-        /usr/bin/time -v -p -o "${OUTPUT}/bedfiles/${chain_basename}/retired_bed/retired_regions.bed.time" \
-        python3 "${SRCFOLDER}/4-extract_reads/get_retired_regions.py" \
+        /usr/bin/time -v -p -o ${OUTPUT}/bedfiles/${chain_basename}/retired_bed/retired_regions.bed.time
+        python3 ${SRCFOLDER}/4-extract_reads/get_retired_regions.py \
         ${READSIZE} \
-        "${OUTPUT}/bedfiles/${chain_basename}/merged_${chain_basename}.bed" \
+        ${OUTPUT}/bedfiles/${chain_basename}/merged_${chain_basename}.bed \
         $i \
-        "${OUTPUT}/bedfiles/${chain_basename}/retired_bed/retired_regions.bed"
+        ${OUTPUT}/bedfiles/${chain_basename}/retired_bed/retired_regions.bed
     done
 
     for i in `ls ${OUTPUT}/*.chain`; do
         local chain_basename=`basename $i | sed s/.chain//`
-        /usr/bin/time -v -p -o "${OUTPUT}/bedfiles/${chain_basename}/retired_bed/retired_reads.bed.time" \
-        bash "${SRCFOLDER}/4-extract_reads/extract_reads_noprune.sh" \
+        /usr/bin/time -v -p -o ${OUTPUT}/bedfiles/${chain_basename}/retired_bed/retired_reads.bed.time \
+        bash ${SRCFOLDER}/4-extract_reads/extract_reads_noprune.sh \
         ${READ_BAM} \
-        "${OUTPUT}/bedfiles/${chain_basename}/retired_bed/retired_regions.bed" > "${OUTPUT}/bedfiles/${chain_basename}/retired_bed/retired_reads.bed"
+        ${OUTPUT}/bedfiles/${chain_basename}/retired_bed/retired_regions.bed > ${OUTPUT}/bedfiles/${chain_basename}/retired_bed/retired_reads.bed
     done
 
     for i in `ls ${OUTPUT}/*.chain`; do
         local chain_basename=`basename $i | sed s/.chain//`
-        mkdir -p "${OUTPUT}/bedfiles/${chain_basename}/reads"
-        cat "${OUTPUT}/bedfiles/${chain_basename}/"*.reads "${OUTPUT}/bedfiles/${chain_basename}/retired_bed/retired_reads.bed" > "${OUTPUT}/bedfiles/${chain_basename}/updated_and_retired_reads.bed"
-        /usr/bin/time -v -p -o "${OUTPUT}/bedfiles/${chain_basename}/extract_sequences_full.time" \
-        bash "${SRCFOLDER}/4-extract_reads/extract_sequence.sh" \
+        mkdir -p ${OUTPUT}/bedfiles/${chain_basename}/reads
+        local -a reads_files=($(ls ${OUTPUT}/bedfiles/${chain_basename}/*.reads | awk '{printf $1" ";}'))
+        cat ${reads_files[@]} ${OUTPUT}/bedfiles/${chain_basename}/retired_bed/retired_reads.bed > ${OUTPUT}/bedfiles/${chain_basename}/updated_and_retired_reads.bed
+        /usr/bin/time -v -p -o ${OUTPUT}/bedfiles/${chain_basename}/extract_sequences_full.time
+        bash ${SRCFOLDER}/4-extract_reads/extract_sequence.sh \
         ${FIRST_PAIR} \
         ${SECOND_PAIR} \
-        "${OUTPUT}/bedfiles/${chain_basename}/updated_and_retired_reads.bed" \
-        "${OUTPUT}/bedfiles/${chain_basename}/reads"
+        ${OUTPUT}/bedfiles/${chain_basename}/updated_and_retired_reads.bed \
+        ${OUTPUT}/bedfiles/${chain_basename}/reads
     done
 
     for i in `ls ${OUTPUT}/*.chain`; do
         local chain_basename=`basename $i | sed s/.chain//`
-        /usr/bin/time -v -p -o "${OUTPUT}/bedfiles/${chain_basename}/reads/paired_reads.time" \
+        /usr/bin/time -v -p -o ${OUTPUT}/bedfiles/${chain_basename}/reads/paired_reads.time \
         bwa mem -M -t $THREAD "${NEWREF}" "${OUTPUT}/bedfiles/${chain_basename}/reads/reads_1.fastq" "${OUTPUT}/bedfiles/${chain_basename}/reads/reads_2.fastq" | \
         samtools view -h -F4 | \
-        samtools sort -m 16g -l0 > "${OUTPUT}/bedfiles/${chain_basename}/reads/paired_reads.bam"
+        samtools sort -m 16g -l0 > ${OUTPUT}/bedfiles/${chain_basename}/reads/paired_reads.bam
     done
 
     for i in `ls ${OUTPUT}/*.chain`; do
         local chain_basename=`basename $i | sed s/.chain//`
-        /usr/bin/time -v -p -o "${OUTPUT}/bedfiles/${chain_basename}/reads/singletons_reads.time" \
+        /usr/bin/time -v -p -o ${OUTPUT}/bedfiles/${chain_basename}/reads/singletons_reads.time \
         bwa mem -M -t $THREAD "${NEWREF}" "${OUTPUT}/bedfiles/${chain_basename}/reads/singletons.fastq" | \
         samtools view -h -F4 | \
-        samtools sort -m 16g -l0 > "${OUTPUT}/bedfiles/${chain_basename}/reads/singletons_reads.bam"
+        samtools sort -m 16g -l0 > ${OUTPUT}/bedfiles/${chain_basename}/reads/singletons_reads.bam
     done
 
     for i in `ls ${OUTPUT}/*.chain`; do
         local chain_basename=`basename $i | sed s/.chain//`
-        bash "${SRCFOLDER}/0-align_reads.sh" \
+        bash ${SRCFOLDER}/0-align_reads.sh \
         "${NEWREF}" \
         "${OUTPUT}/bedfiles/${chain_basename}/reads/reads" \
         "${OUTPUT}/bedfiles/${chain_basename}/reads/paired" \
@@ -269,7 +271,7 @@ function extract_reads_with_parallel(){
 
     for i in `ls ${OUTPUT}/*.chain`; do
         local chain_basename=`basename $i | sed s/.chain//`
-        bash "${SRCFOLDER}/0-align_singletons.sh" \
+        bash ${SRCFOLDER}/0-align_singletons.sh \
         "${NEWREF}" \
         "${OUTPUT}/bedfiles/${chain_basename}/reads/singletons.fastq" \
         "${OUTPUT}/bedfiles/${chain_basename}/reads/singletons" \
