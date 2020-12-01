@@ -296,11 +296,8 @@ function main(){
 
     align_gaps
 
-    if [[ -z ${11} ]]; then
-        extract_reads_with_parallel
-    else
-        extract_reads
-    fi
+    extract_reads_with_parallel
+    
 }
 
 
