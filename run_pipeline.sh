@@ -69,7 +69,7 @@ function extract_reads(){
         /usr/bin/time -v -p -o "${OUTPUT}/bedfiles/${chain_basename}/extract_regions.time" \
         bash "${SRCFOLDER}/4-extract_reads/extract_regions.sh" \
         "${OUTPUT}/${chain_basename}_aligned_gaps.bam" \
-        "${OUTPUT}/bedfiles/${chain_basename}/"
+        "${OUTPUT}/bedfiles/${chain_basename}"
     done
 
     for i in `echo ${OUTPUT}/*.chain`; do
