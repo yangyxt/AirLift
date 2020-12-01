@@ -23,5 +23,5 @@ CHAIN_SCRIPT=$4 #exact path to "chain_generate.sh"
 SEQ_FILE_EXT=$5 #what is the extension of the fasta/fastq files? possible options: fa, fasta, fastq, fq
 OUTPUT=$6
 
-for i in `echo ${FROM_FA_FILES}/*.${SEQ_FILE_EXT}`; do chr=`basename $i | sed s/.${SEQ_FILE_EXT}//`; /usr/bin/time -vpo "${OUTPUT}/$chr.time" sh ${CHAIN_SCRIPT} $i ${TO_FA_FILES}/$chr.${SEQ_FILE_EXT} ${UTILS} "${OUTPUT}/${chr}"; mv "${OUTPUT}/${chr}/target_to_query.chain" "${OUTPUT}/${chr}.chain"; rm -rf "${OUTPUT}/${chr}"; done
+for i in `ls ${FROM_FA_FILES}/*.${SEQ_FILE_EXT}`; do chr=`basename $i | sed s/.${SEQ_FILE_EXT}//`; /usr/bin/time -vpo "${OUTPUT}/$chr.time" sh ${CHAIN_SCRIPT} $i ${TO_FA_FILES}/$chr.${SEQ_FILE_EXT} ${UTILS} "${OUTPUT}/${chr}"; mv "${OUTPUT}/${chr}/target_to_query.chain" "${OUTPUT}/${chr}.chain"; rm -rf "${OUTPUT}/${chr}"; done
 

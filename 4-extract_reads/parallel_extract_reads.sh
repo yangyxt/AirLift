@@ -11,7 +11,7 @@ source $(which env_parallel.bash)
 #{NUM_FILES}
 #{THREAD}
 
-FILES=({BED_FILES_FOLDER}/*.bed)
+FILES=($(ls {BED_FILES_FOLDER}/*.bed | awk '{printf $1" ";}'))
 BED_FILE=${FILES[${SLURM_ARRAY_TASK_ID}]}
 OUT_READS=$(echo ${BED_FILE}.reads)
 tmp_dir=/paedyl01/disk1/yangyxt/test_tmp
