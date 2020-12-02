@@ -244,12 +244,17 @@ function extract_reads_with_parallel(){
 
     local SAMPLE=$(echo ${READ_BAM} | awk -F '/' '{printf $NF}' | awk -F '.' '{printf $1}')
     echo SAMPLE_ID is ${SAMPLE}
+
+    module load gcc/4.9.1
+
     for i in `ls ${OUTPUT}/*.chain`; do 
         local chain_basename=`basename $i | sed s/.chain//`
         cat <(bwa mem -R "@RG\tID:${SAMPLE}\tSM:${SAMPLE}\tPL:illumina\tLB:${SAMPLE}" ${NEWREF} ${FIRST_PAIR} ${SECOND_PAIR} | \
         samtools view -H -) <(/usr/bin/time -v -p -o "${OUTPUT}/bedfiles/${chain_basename}/constant_bed/constant_liftOver.time" liftOver -minMatch=1 <(samtools view -h -L "${OUTPUT}/bedfiles/${chain_basename}/constant_bed/constant_regions.bed" ${READ_BAM} | bamToBed -i -) ${i} >("${SRCFOLDER}/5-merge/liftBedToSam" <(samtools view -L "${OUTPUT}/bedfiles/${chain_basename}/constant_bed/constant_regions.bed" ${READ_BAM}) - 4 3,4 1,2) "${OUTPUT}/bedfiles/${chain_basename}/constant_bed/constant_unmapped.bed") | \
         samtools sort -l5 > ${OUTPUT}/bedfiles/${chain_basename}/constant_bed/constant_lifted.bam
     done
+
+    module unload gcc/4.9.1
 
     for i in `ls ${OUTPUT}/*.chain`; do
         local chain_basename=`basename $i | sed s/.chain//`
