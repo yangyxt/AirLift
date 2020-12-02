@@ -242,9 +242,11 @@ function extract_reads_with_parallel(){
         ${OUTPUT}/bedfiles/${chain_basename}/constant_bed/constant_regions.bed > "${OUTPUT}/bedfiles/${chain_basename}/constant_bed/constant_reads.bed"
     done
 
+    local SAMPLE=$(echo ${READ_BAM} | awk -F '/' '{printf $NF}' | awk -F '.' '{printf $1}')
+    echo SAMPLE_ID is ${SAMPLE}
     for i in `ls ${OUTPUT}/*.chain`; do 
         local chain_basename=`basename $i | sed s/.chain//`
-        bwa mem -R "@RG\tID:${SAMPLE}\tSM:${SAMPLE}\tPL:illumina\tLB:${SAMPLE}" ${NEWREF} ${FIRST_PAIR} ${SECOND_PAIR} | \
+        cat <(bwa mem -R "@RG\tID:${SAMPLE}\tSM:${SAMPLE}\tPL:illumina\tLB:${SAMPLE}" ${NEWREF} ${FIRST_PAIR} ${SECOND_PAIR} | \
         samtools view -H -) <(/usr/bin/time -v -p -o "${OUTPUT}/bedfiles/${chr}/constant/constant_liftOver.time" liftOver -minMatch=1 <(samtools view -h -L "${OUTPUT}/bedfiles/${chain_basename}/constant/constant_regions.bed" ${READ_BAM} | bamToBed -i -) ${i} >("${SRCDIR}/5-merge/liftBedToSam" <(samtools view -L "${OUTPUT}/bedfiles/${chain_basename}/constant/constant_regions.bed" ${READ_BAM}) - 4 3,4 1,2) "${OUTPUT}/bedfiles/${chain_basename}/constant/constant_unmapped.bed") | \
         samtools sort -l5 > ${OUTPUT}/bedfiles/${chain_basename}/constant/constant_lifted.bam
     done
