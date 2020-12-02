@@ -10,7 +10,7 @@ awk -v out_fol="$OUT_FOLDER" '{split($4, array, "_"); fname=array[1]"_"array[2]"
 echo "Before ls bed files, take a look at the out_folder "${OUT_FOLDER}
 for i in `ls ${OUT_FOLDER}/*.bed`; do
     fname=`basename $i`
-    mergeBed -i $i > ${OUT_FOLDER}/merged_$fname
+    sortBed -i $i | mergeBed -i - > ${OUT_FOLDER}/merged_$fname
     mv ${OUT_FOLDER}/merged_$fname $i
 done
 
