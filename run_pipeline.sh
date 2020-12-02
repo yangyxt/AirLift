@@ -202,8 +202,8 @@ function extract_reads_with_parallel(){
 
     for i in `ls ${OUTPUT}/*.chain`; do
         local chain_basename=`basename $i | sed s/.chain//`
-        /usr/bin/time -v -p -o ${OUTPUT}/bedfiles/${chain_basename}/merged_${chain_basename}.bed.time
         local -a beds=($(ls ${OUTPUT}/bedfiles/${chain_basename}/*.bed | awk '{printf $1" ";}'))
+        /usr/bin/time -v -p -o "${OUTPUT}/bedfiles/${chain_basename}/merged_${chain_basename}.bed.time" \
         cat ${beds[@]} | sortBed -i - | mergeBed -i - > ${OUTPUT}/bedfiles/${chain_basename}/merged_${chain_basename}.bed
     done
 
@@ -215,7 +215,7 @@ function extract_reads_with_parallel(){
 
     for i in `ls ${OUTPUT}/*.chain`; do
         local chain_basename=`basename $i | sed s/.chain//`
-        /usr/bin/time -v -p -o ${OUTPUT}/bedfiles/${chain_basename}/retired_bed/retired_regions.bed.time
+        /usr/bin/time -v -p -o "${OUTPUT}/bedfiles/${chain_basename}/retired_bed/retired_regions.bed.time" \
         python3 ${SRCFOLDER}/4-extract_reads/get_retired_regions.py \
         ${READSIZE} \
         ${OUTPUT}/bedfiles/${chain_basename}/merged_${chain_basename}.bed \
@@ -236,7 +236,7 @@ function extract_reads_with_parallel(){
         mkdir -p ${OUTPUT}/bedfiles/${chain_basename}/reads
         local -a reads_files=($(ls ${OUTPUT}/bedfiles/${chain_basename}/*.reads | awk '{printf $1" ";}'))
         cat ${reads_files[@]} ${OUTPUT}/bedfiles/${chain_basename}/retired_bed/retired_reads.bed > ${OUTPUT}/bedfiles/${chain_basename}/updated_and_retired_reads.bed
-        /usr/bin/time -v -p -o ${OUTPUT}/bedfiles/${chain_basename}/extract_sequences_full.time
+        /usr/bin/time -v -p -o "${OUTPUT}/bedfiles/${chain_basename}/extract_sequences_full.time" \
         bash ${SRCFOLDER}/4-extract_reads/extract_sequence.sh \
         ${FIRST_PAIR} \
         ${SECOND_PAIR} \
