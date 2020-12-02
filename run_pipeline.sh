@@ -223,6 +223,32 @@ function extract_reads_with_parallel(){
         ${OUTPUT}/bedfiles/${chain_basename}/retired_bed/retired_regions.bed
     done
 
+    # constant regions:
+    for i in `ls ${OUTPUT}/*.chain`; do
+        local chain_basename=`basename $i | sed s/.chain//`
+        /usr/bin/time -v -p -o "${OUTPUT}/bedfiles/${chain_basename}/constant_bed/constant_regions.bed.time" \
+        python3 \
+        "${SRCFOLDER}/4-extract_reads/get_constant_regions.py" \
+        ${READSIZE} \
+        $i \
+        "${OUTPUT}/bedfiles/${chain_basename}/constant_bed/constant_regions.bed"
+    done
+
+    for i in `ls ${OUTPUT}/*.chain`; do
+        local chain_basename=`basename $i | sed s/.chain//`
+        /usr/bin/time -v -p -o "${OUTPUT}/bedfiles/${chain_basename}/constant_bed/constant_reads.bed.time" \
+        bash ${SRCFOLDER}/4-extract_reads/extract_reads_noprune.sh \
+        ${READ_BAM} \
+        ${OUTPUT}/bedfiles/${chain_basename}/constant_bed/constant_regions.bed > "${OUTPUT}/bedfiles/${chain_basename}/constant_bed/constant_reads.bed"
+    done
+
+    for i in `ls ${OUTPUT}/*.chain`; do 
+        local chain_basename=`basename $i | sed s/.chain//`
+        bwa mem -R "@RG\tID:${SAMPLE}\tSM:${SAMPLE}\tPL:illumina\tLB:${SAMPLE}" ${NEWREF} ${FIRST_PAIR} ${SECOND_PAIR} | \
+        samtools view -H -) <(/usr/bin/time -v -p -o "${OUTPUT}/bedfiles/${chr}/constant/constant_liftOver.time" liftOver -minMatch=1 <(samtools view -h -L "${OUTPUT}/bedfiles/${chain_basename}/constant/constant_regions.bed" ${READ_BAM} | bamToBed -i -) ${i} >("${SRCDIR}/5-merge/liftBedToSam" <(samtools view -L "${OUTPUT}/bedfiles/${chain_basename}/constant/constant_regions.bed" ${READ_BAM}) - 4 3,4 1,2) "${OUTPUT}/bedfiles/${chain_basename}/constant/constant_unmapped.bed") | \
+        samtools sort -l5 > ${OUTPUT}/bedfiles/${chain_basename}/constant/constant_lifted.bam
+    done
+
     for i in `ls ${OUTPUT}/*.chain`; do
         local chain_basename=`basename $i | sed s/.chain//`
         /usr/bin/time -v -p -o "${OUTPUT}/bedfiles/${chain_basename}/retired_bed/retired_reads.bed.time" \
@@ -306,7 +332,6 @@ then
     main "$@"
 fi
 
-#constant regions:
-#for i in `ls ${OUTPUT}/*.chain`; do local chain_basename=`basename $i | sed s/.chain//`; /usr/bin/time -v -p -o "${OUTPUT}/bedfiles/${chain_basename}/constant_bed/constant_regions.bed.time" python3 "${SRCFOLDER}/4-extract_reads/get_constant_regions.py" ${READSIZE} $i "${OUTPUT}/bedfiles/${chain_basename}/constant_bed/constant_regions.bed"; done
-#sbatch --local wrap="for i in `ls ${OUTPUT}/*.chain`; do local chain_basename=`basename $i | sed s/.chain//`; /usr/bin/time -v -p -o "${OUTPUT}/bedfiles/${chain_basename}/constant_bed/constant_reads.bed.time" bash "${SRCFOLDER}/4-extract_reads/extract_reads_noprune.sh" ${READ_BAM} "${OUTPUT}/bedfiles/${chain_basename}/constant_bed/constant_regions.bed" > "${OUTPUT}/bedfiles/${chain_basename}/constant_bed/constant_reads.bed"; done"
+
+sbatch --local wrap=""
 
